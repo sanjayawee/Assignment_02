@@ -1,16 +1,22 @@
-let numberOfStars = 200;
-let minSizeOfStars = 1;
-let maxSizeOfStars = 5;
-
-
-let xSpeed = 5;
-let ySpeed = 5;
+let numberOfStars = 180;
+let minSizeOfStars = 2;
+let maxSizeOfStars = 10;
+let COLOURS = ['#69D2E7', '#A7DBD8', '#E0E4CC', '#F38630', '#FA6900', '#FF4E50', '#F9D423'];
+let easing = 0.05;
+let mic;
 
 let stars = [];
+let particles = [];
+let pool = [];
 
 
 function setup(){
   createCanvas(innerWidth,innerHeight);
+  mic = new p5.AudioIn()
+  mic.start();
+  colorMode(HSB,1);
+  noStroke();
+
 for (let i = 0; i < numberOfStars; i++) {
   let radius = Math.random()* 3 + 1;
   let x = Math.random()*(innerWidth-radius*2)+radius;
@@ -25,12 +31,17 @@ for (let i = 0; i < numberOfStars; i++) {
 
 function draw() {
   background(0);
+    micLevel = mic.getLevel(.9);
   for(let i = 0; i < stars.length; i++)
   {
   stars[i].move();
-  stars[i].show();
+
+  stars[i].show(micLevel);
   stars[i].reAppear();
+//  stars[i].mouseIntraction();
+
   }
+
 }
 
 class Stars {
@@ -41,30 +52,34 @@ class Stars {
      this.weight = tempweight;
      this.dx = tempdx;
      this.dy = tempdy;
+     this.m = random(height/10,height);
+     this.c = random();
+
+     this.theta = random(PI);
+      this.drag = 0.92;
+      this.dx = sin(this.theta);
+      this.dy = cos(this.theta);
+
+
      this.radius = tempradius;
-     this.colorOfStars = "RGB(255,0,255)";
+     this.color = random(COLOURS);
   }
+
 move(){
- //  this.x =this.x + xSpeed * this.speedFactor;
- // this.y =this.y+ ySpeed * this.speedFactor;
- // if(this.x + this.radius > innerWidth || this.x - this.radius < 0){
- //   this.dx = -this.dx;
- // }
- //
- // if(this.y + this.radius > innerHeight || this.y - this.radius < 0 ){
- //   this.dy = -this.dy;
- // }
-   this.x += this.dx;
-   this.y += this.dy;
+
+    this.x += this.dx;
+    this.y += this.dy;
 
 }
 
-show(){
+show(level){
 
-//  stroke(floor((random(mouseX))), floor((random(mouseY))), 255,255)
-  stroke(this.colorOfStars);
-  strokeWeight(this.weight);
-  point(this.x,this.y,this.z);
+  // stroke(this.color);
+  // strokeWeight(this.weight);
+  // point(this.x,this.y);
+
+ fill(this.c, 1, 1, 1-level);
+  ellipse(this.x, this.y, this.m*level);
 }
 
 reAppear(){
@@ -78,5 +93,18 @@ reAppear(){
     this.y = height + this.weight;
   }
 }
+
+mouseIntraction(){
+  if(mouseX - this.x <100 && mouseX - this.x > -100 && mouseY - this.y < 100 && mouseY - this.y > -100){
+     let targetX = mouseX;
+     let vx = targetX - this.x;
+     this.x += vx * easing;
+
+     let targetY = mouseY;
+     let vy = targetY - this.y;
+     this.y += vy * easing;
+     }
+}
+
 
 }
